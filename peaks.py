@@ -22,11 +22,12 @@ def moving_average(x, N=8):
 
 def findpeak(X, baseline_poly=1, thres = 0.35, min_dist = 12):
     '''Find the index of the peaks in a function
-    
-    See peakutils documentation: http://pythonhosted.org/PeakUtils/
 
     Args:
-        X: 2D np array of normalized load shapes. Dimension (n_loads, 24/interval_length)
+        X: 1D np array containing a normalized load shape. Dimension (1, 24/interval_length)
+        See peakutils documentation: http://pythonhosted.org/PeakUtils/
+
+    Returns indices of peak maxima
     '''
     if baseline_poly > 0:
         base = peakutils.baseline(X, baseline_poly)
@@ -35,8 +36,9 @@ def findpeak(X, baseline_poly=1, thres = 0.35, min_dist = 12):
         peakidx = peakutils.indexes(X, thres, min_dist)
     
     if len(peakidx) > 3:
-        peakidx = peakutils.indexes(X, thres+0.15, min_dist)
         #increase threshold if too many peaks are detected
+        peakidx = peakutils.indexes(X, thres+0.15, min_dist)
+        
 
     return peakidx
 
