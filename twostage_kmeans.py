@@ -23,14 +23,18 @@ def integral_kmeans(X, k):
 	'''Cluster by integral k-means
 	
 	Args:
-		X: 2D np array of normalized load shapes. Dimension (n_loads, 24/interval_length)
-		k: Number of clusters
+		X: 2D np array of load profiles. Dimension (n_loads, 24/interval_length)
+		k: Number of cluster
 
 	Returns list of integral k-means cluster assignments for each load in X
 	'''
 
     max_power = X.max(axis = 1)
     interval= 24/float(X.shape[1])
+
+    #Normalize
+
+    
     ts_integral = np.apply_along_axis(lambda ts: integral_seq(ts, dx=interval), 1, X)
     ts_integral = np.concatenate((ts_integral, max_power.reshape(max_power.shape[0], 1)), axis=1)
     kmeans = KMeans(n_clusters=k).fit(ts_integral)
@@ -42,7 +46,7 @@ def twostage_kmeans(X, k_consumption, k_peaktime):
 	'''Cluster by two-stage k-means
 	
 	Args:
-		X: 2D np array of dimension (n_households, time)
+		X: 2D np array of load profiles. Dimension (n_loads, 24/interval_length)
 		k_consumption: Number of clusters determined by overall consumption
 		k_peaktime: Number of clusters determined by time of peak
 
@@ -58,6 +62,6 @@ def twostage_kmeans(X, k_consumption, k_peaktime):
 
         cluster = df.loc[df.integ_labels == i, :].drop(['integ_labels'], axis=1)
         kmeans = KMeans(n_clusters=k_peaktime).fit(cluster)
-        twostage_labels = twostage_labels + list(k_consumption*(i) + kmeans.labels_)
+        twostage_labels = twostage_labels + list(k_peaktime*(i) + kmeans.labels_)
 
     return twostage_labels
