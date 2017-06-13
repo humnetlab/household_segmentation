@@ -19,7 +19,7 @@ def integral_seq(ts, dx=0.25):
     return integral[1:]
 
 
-def integral_kmeans(X, k):
+def integral_kmeans(X, k, load_shapes=False):
 	'''Cluster by integral k-means
 	
 	Args:
@@ -33,11 +33,17 @@ def integral_kmeans(X, k):
     interval= 24/float(X.shape[1])
 
     #Normalize
+    total_power = X.sum(axis = 1)
+	X_norm = (X.T/total_power).T
 
-    
-    ts_integral = np.apply_along_axis(lambda ts: integral_seq(ts, dx=interval), 1, X)
+    ts_integral = np.apply_along_axis(lambda ts: integral_seq(ts, dx=interval), 1, X_norm)
     ts_integral = np.concatenate((ts_integral, max_power.reshape(max_power.shape[0], 1)), axis=1)
     kmeans = KMeans(n_clusters=k).fit(ts_integral)
+
+    if load_shapes:
+    	df = pd.DataFrame(X_norm)
+    	df['integ_labels'] = kmeans.labels_
+    	return df
 
     return kmeans.labels_
 
@@ -53,8 +59,8 @@ def twostage_kmeans(X, k_consumption, k_peaktime):
 	Returns list of two-stage k-means cluster assignments for each load in X
 	'''
 
-    df = pd.DataFrame(X)
-    df['integ_labels'] = integral_kmeans(df, k_consumption)
+    include_load_shapes=True
+    df = integral_kmeans(X, k_consumption, include_load_shapes)
 
     twostage_labels = []
 
